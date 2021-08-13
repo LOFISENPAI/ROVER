@@ -1,20 +1,11 @@
-#Modified by smartbuilds.io
-#Date: 27.09.20
-#Desc: This web application serves a motion JPEG stream
-# main.py
-# import the necessary packages
 from flask import Flask, render_template, Response, request
-from appCam import VideoCamera
+from appCam import Camera
 from gpiozero import Servo, Robot
 from gpiozero.pins.pigpio import PiGPIOFactory
-from gpiozero import Servo
 from time import sleep
 import time
 import threading
 import os
-import curses
-
-pi_camera = VideoCamera(flip=False) # flip pi camera if upside down.
 
 #Define Motor Driver GPIO pins
 # Motor A, LEFT
@@ -59,7 +50,7 @@ def gen(camera):
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(gen(pi_camera),
+    return Response(gen(Camera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
@@ -80,18 +71,25 @@ def action(deviceName, action):
             actuator.value -= 0.2
         sleep(0.005)
     if action == "mid":
-        actuator.mid()
+        pan.mid()
+        tilt.mid()
         sleep(0.005)
     if action == "forward":
-        rover.forward(FSPD)
+        actuator.forward(FSPD)
     if action == "backward":
-        rover.backward(BSPD)
+        actuator.backward(BSPD)
     if action == "stop":
-        rover.stop()
+        actuator.stop()
     if action == "left":
-        rover.left(TSPD)
+        actuator.left(TSPD)
     if action == "right":
-        rover.right(TSPD)
+        actuator.right(TSPD)
+    if action == "backLeft":
+        actuator.left()
+        actuator.reverse()
+    if action == "backRight":
+        actuator.right()
+        actuator.reverse()
     return render_template('index.html')
 
 if __name__ == '__main__':
